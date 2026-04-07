@@ -6,7 +6,7 @@
     <title>GEPT 單字冒險 - 勇者傳說修復版</title>
     <style>
         /* =========================================
-           CSS 樣式：極致黑金 RPG 遊戲介面 (修復版)
+           CSS 樣式：極致黑金 RPG 遊戲介面
            ========================================= */
         :root {
             --bg-deep: #050a14;
@@ -49,7 +49,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 0. 彈出對話框系統 (修復點擊穿透) */
+        /* 0. 彈出對話框系統 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay-bg); z-index: 9000;
@@ -72,11 +72,19 @@
         .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-top: 30px; }
         .char-card {
             background: linear-gradient(145deg, #112240, #0a192f);
-            border: 2px solid var(--gold-main);
+            border: 2px solid rgba(212, 175, 55, 0.2);
             border-radius: 20px; padding: 20px; cursor: pointer; transition: 0.3s;
             text-align: center; box-shadow: var(--shadow);
+            opacity: 0.7;
         }
-        .char-card:hover { border-color: var(--gold-bright); transform: translateY(-5px); }
+        .char-card:hover { border-color: var(--gold-main); opacity: 1; transform: translateY(-5px); }
+        .char-card.selected { 
+            border-color: var(--gold-bright); 
+            opacity: 1; 
+            box-shadow: 0 0 30px rgba(249, 226, 114, 0.4);
+            background: linear-gradient(145deg, #1d3557, #0a192f);
+        }
+
         .char-img-frame {
             width: 100%; aspect-ratio: 1/1; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.4);
             margin-bottom: 15px; overflow: hidden; background: #000;
@@ -85,7 +93,34 @@
         .char-img-frame img { width: 100%; height: 100%; object-fit: cover; }
         .char-name { color: var(--gold-bright); font-weight: bold; font-size: 1.3rem; }
 
-        /* 2. 模式按鈕 (優化佈局) */
+        /* 自我介紹文字框 */
+        #char-intro-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border-left: 4px solid var(--gold-bright);
+            width: 100%;
+            min-height: 80px;
+            display: none;
+            text-align: left;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* 確認按鈕專屬樣式 */
+        #confirm-char-btn {
+            display: none;
+            margin-top: 20px;
+            animation: bounceIn 0.5s ease;
+        }
+        @keyframes bounceIn { 
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 2. 模式按鈕 */
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 25px; }
         .mode-btn {
             padding: 20px 10px; border-radius: 20px; border: 3px solid rgba(212, 175, 55, 0.2);
@@ -95,7 +130,7 @@
         }
         .mode-btn span:first-child { font-size: 2.2rem; }
         .mode-btn.active#btn-study { border-color: var(--gold-main); color: var(--gold-bright); background: #2c1f0a; box-shadow: 0 0 20px var(--gold-main); }
-        .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a2342; box-shadow: 0 0 20px var(--accent-blue); }
+        .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a1f3d; box-shadow: 0 0 20px var(--accent-blue); }
 
         /* 3. 勇者面板 */
         .hero-bar {
@@ -106,7 +141,7 @@
         .hero-img-box { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gold-bright); overflow: hidden; margin-right: 15px; background: #000; }
         .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 4. 控制區：語速與分類 */
+        /* 4. 控制區 */
         .control-panel {
             width: 100%; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 25px;
             margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px;
@@ -121,7 +156,7 @@
         }
         .small-btn.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 175, 55, 0.2); font-weight: bold; }
 
-        /* 5. 單字卡與測驗區 (修復錯亂) */
+        /* 5. 單字卡與測驗區 */
         .card-wrap { width: 100%; height: 350px; perspective: 1200px; cursor: pointer; margin-bottom: 25px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
@@ -135,7 +170,6 @@
         .card-front .trans { font-size: 1.8rem; color: var(--gold-main); margin-top: 15px; }
         .card-back { transform: rotateY(180deg); background: linear-gradient(145deg, #1a2a44, #0a192f); text-align: center; }
 
-        /* 測驗區優化 */
         .quiz-area { display: none; width: 100%; background: var(--bg-surface); padding: 30px 20px; border-radius: 30px; border: 2px solid var(--gold-main); text-align: center; margin-bottom: 25px; box-shadow: var(--shadow); }
         .quiz-q { font-size: 1.4rem; margin-bottom: 25px; min-height: 5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; }
         .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -166,7 +200,7 @@
                 <p style="margin-bottom:30px; font-size:1.2rem; line-height:1.6;">
                     請選擇一位導師作為夥伴，<br>展開冒險之旅！
                 </p>
-                <button class="game-btn" onclick="closeOverlay('welcome-overlay', 'scr-select')">踏入傳送門</button>
+                <button class="game-btn" style="margin: 0 auto;" onclick="closeOverlay('welcome-overlay', 'scr-select')">踏入傳送門</button>
             </div>
         </div>
     </div>
@@ -174,16 +208,29 @@
     <!-- 1. 角色選擇畫面 -->
     <div id="scr-select" class="screen">
         <h1 style="color:var(--gold-main); font-size:2.8rem; margin: 20px 0; text-align:center;">GEPT 大冒險</h1>
+        <p style="color:var(--gold-main); opacity:0.8; text-align:center; margin-bottom:10px;">— 點擊選擇導師 —</p>
+        
         <div class="char-grid">
-            <div class="char-card" onclick="startAdventure('male')">
+            <div id="char-male" class="char-card" onclick="selectCharacter('male')">
                 <div class="char-img-frame"><img src="char1.png" onerror="this.parentElement.innerHTML='👨‍🏫'"></div>
                 <div class="char-name">凱文 (Kevin)</div>
             </div>
-            <div class="char-card" onclick="startAdventure('female')">
+            <div id="char-female" class="char-card" onclick="selectCharacter('female')">
                 <div class="char-img-frame"><img src="char2.png" onerror="this.parentElement.innerHTML='👩‍🏫'"></div>
                 <div class="char-name">艾莉絲 (Alice)</div>
             </div>
         </div>
+
+        <!-- 角色自我介紹區 -->
+        <div id="char-intro-box">
+            <div style="color: var(--gold-bright); font-weight: bold; margin-bottom: 5px;" id="intro-name">導師名</div>
+            <div style="font-size: 0.95rem; color: var(--text-light);" id="intro-text">打招呼內容...</div>
+        </div>
+
+        <!-- 確認按鈕 -->
+        <button id="confirm-char-btn" class="game-btn" onclick="proceedToModeSelection()">
+            ✨ 確認選擇，開始冒險！
+        </button>
     </div>
 
     <!-- 1.5 模式選擇 -->
@@ -204,7 +251,7 @@
             <div style="font-size:3.5rem; margin-bottom:15px;">🗺️</div>
             <h2 style="color:var(--gold-bright); margin-bottom:10px;">地圖導引</h2>
             <p style="font-size:1.1rem;">請先點擊上方的「主題按鈕」<br>選擇你要挑戰的範圍！</p>
-            <button class="game-btn" style="margin-top:20px;" onclick="closeOverlay('modal-theme-guide', 'scr-game')">接收指令</button>
+            <button class="game-btn" style="margin-top:20px; margin-left: auto; margin-right: auto;" onclick="closeOverlay('modal-theme-guide', 'scr-game')">接收指令</button>
         </div>
     </div>
 
@@ -251,10 +298,10 @@
             </div>
         </div>
 
-        <!-- 測驗區域 (已修復佈局) -->
+        <!-- 測驗區域 -->
         <div id="quiz-widget" class="quiz-area">
             <div id="quiz-msg" style="height:24px; font-weight:bold; margin-bottom:10px;"></div>
-            <div id="quiz-q-text" class="quiz-q">請選擇主題開始</div>
+            <div class="quiz-q" id="quiz-q-text">請選擇主題開始</div>
             <div class="opt-grid" id="opt-grid"></div>
         </div>
 
@@ -285,13 +332,65 @@
             ]
         };
 
-        let state = { hero: null, mode: 'study', cat: '日常社交', idx: 0, speed: 1.0 };
+        const charIntros = {
+            male: {
+                name: "凱文 (Kevin)",
+                text: "哈囉！我是凱文。我將用智慧引領你探索英文世界，讓我們一起紮實學習！",
+                voice: "Hello! I am Kevin. I will guide you through the English world with wisdom."
+            },
+            female: {
+                name: "艾莉絲 (Alice)",
+                text: "嗨！我是艾莉絲。讓我們展開有趣的冒險並學習新單字吧，準備好出發了嗎？",
+                voice: "Hi! I am Alice. Let's have a fun adventure and learn new words!"
+            }
+        };
 
-        // --- 核心修復：關閉遮罩並徹底移除透明牆 ---
+        let state = { hero: null, mode: 'study', cat: '日常社交', idx: 0, speed: 1.0, selectedType: null };
+
+        // --- 核心優化：更強大的性別語音過濾 ---
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US';
+                u.rate = state.speed;
+
+                // 獲取當前應用的性別類型
+                const targetGender = state.hero ? state.hero.gender : (state.selectedType || 'male');
+                const voices = window.speechSynthesis.getVoices();
+                let selectedVoice = null;
+
+                const maleKeywords = ['male', 'david', 'mark', 'guy', 'google us english', 'andrew'];
+                const femaleKeywords = ['female', 'zira', 'samantha', 'catherine', 'google us english', 'linda', 'hazel'];
+
+                if (targetGender === 'male') {
+                    // 尋找凱文的男生聲音
+                    selectedVoice = voices.find(v => v.lang.startsWith('en') && 
+                        maleKeywords.some(keyword => v.name.toLowerCase().includes(keyword)) &&
+                        !v.name.toLowerCase().includes('female')); // 排除標示為女聲的
+                } else {
+                    // 尋找艾莉絲的女生聲音
+                    selectedVoice = voices.find(v => v.lang.startsWith('en') && 
+                        femaleKeywords.some(keyword => v.name.toLowerCase().includes(keyword)) &&
+                        !v.name.toLowerCase().includes('male')); // 排除標示為男聲的
+                }
+
+                // 兜底方案：如果沒找到特定性別，選第一個英文語音
+                if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en'));
+                
+                if (selectedVoice) u.voice = selectedVoice;
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        // 確保語音庫已載入
+        window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+        window.onload = () => { window.speechSynthesis.getVoices(); };
+
         function closeOverlay(overlayId, nextScreenId) {
             const overlay = document.getElementById(overlayId);
             overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none'; // 關鍵修復：防止透明牆擋住點擊
+            overlay.style.pointerEvents = 'none';
             setTimeout(() => {
                 overlay.style.display = 'none';
                 if (nextScreenId) {
@@ -301,8 +400,29 @@
             }, 400);
         }
 
-        function startAdventure(type) {
-            state.hero = type === 'male' ? { name: "勇者 凱文", img: "char1.png" } : { name: "勇者 艾莉絲", img: "char2.png" };
+        function selectCharacter(type) {
+            state.selectedType = type;
+            document.getElementById('char-male').classList.toggle('selected', type === 'male');
+            document.getElementById('char-female').classList.toggle('selected', type === 'female');
+            
+            const introBox = document.getElementById('char-intro-box');
+            introBox.style.display = 'block';
+            document.getElementById('intro-name').innerText = charIntros[type].name;
+            document.getElementById('intro-text').innerText = charIntros[type].text;
+            
+            // 播放性別對應的招呼語
+            speak(charIntros[type].voice);
+            document.getElementById('confirm-char-btn').style.display = 'block';
+            if (window.navigator.vibrate) window.navigator.vibrate(20);
+        }
+
+        function proceedToModeSelection() {
+            if (!state.selectedType) return;
+            const type = state.selectedType;
+            state.hero = type === 'male' ? 
+                { name: "勇者 凱文", img: "char1.png", gender: 'male' } : 
+                { name: "勇者 艾莉絲", img: "char2.png", gender: 'female' };
+            
             document.getElementById('hero-welcome-msg').innerText = `你好，${state.hero.name}！`;
             document.getElementById('scr-select').classList.remove('active');
             document.getElementById('modal-mode-overlay').style.display = 'flex';
@@ -357,35 +477,20 @@
             document.getElementById('card-widget').classList.toggle('flipped');
         }
 
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'en-US'; u.rate = state.speed; window.speechSynthesis.speak(u);
-            }
-        }
-
         function replayAudio(e) { e.stopPropagation(); speak(dataSet[state.cat][state.idx].en); }
 
         function genQuiz(correct) {
             const grid = document.getElementById('opt-grid'); grid.innerHTML = '';
             document.getElementById('quiz-q-text').innerText = dataSet[state.cat][state.idx].sent.replace('{word}', '______');
-            
             const cleanCorrect = correct.trim();
-            let pool = []; 
-            Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en.trim())));
-            
+            let pool = []; Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en.trim())));
             let opts = [cleanCorrect, ...pool.filter(w => w.toLowerCase() !== cleanCorrect.toLowerCase())]
                        .filter((v, i, a) => a.indexOf(v) === i)
-                       .sort(() => Math.random() - 0.5)
-                       .slice(0, 4);
-
+                       .sort(() => Math.random() - 0.5).slice(0, 4);
             opts = opts.sort(() => Math.random() - 0.5);
-
             opts.forEach(o => {
                 const b = document.createElement('button');
-                b.className = 'opt-btn';
-                b.innerText = o;
+                b.className = 'opt-btn'; b.innerText = o;
                 b.onclick = () => {
                     if(o.toLowerCase().trim() === cleanCorrect.toLowerCase()) {
                         b.style.background = 'var(--accent-success)';
