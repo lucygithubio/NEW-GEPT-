@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEPT 單字冒險 - 勇者傳說版</title>
+    <style>
+        /* =========================================
+           CSS 樣式：黑金遊戲質感與醒目 UI
+           ========================================= */
+        :root {
+            --bg-deep: #050a14;
+            --bg-surface: #0a192f;
+            --gold-main: #d4af37;
+            --gold-bright: #f9e272;
+            --text-light: #e6f1ff;
+            --text-dim: #8892b0;
+            --accent-blue: #4A90E2;
+            --accent-success: #2ecc71;
+            --accent-fail: #ff4b2b;
+            --shadow: 0 10px 30px rgba(0,0,0,0.6);
+            --overlay-bg: rgba(5, 10, 20, 0.98);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', '微軟正黑體', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999;
+        }
+
+        /* 螢幕切換控制 */
+        .screen { display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; }
+        .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 遮罩引導系統 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay-bg); z-index: 5000;
+            display: flex; justify-content: center; align-items: center;
+            text-align: center; backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: var(--bg-surface); border: 2px solid var(--gold-main);
+            padding: 40px; border-radius: 30px; box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+            max-width: 450px; width: 90%;
+        }
+
+        /* 1. 角色選擇畫面 */
+        .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-top: 20px; }
+        .char-card {
+            background: var(--bg-surface); border: 2px solid var(--gold-main);
+            border-radius: 20px; padding: 15px; cursor: pointer; transition: 0.3s;
+            text-align: center; box-shadow: var(--shadow);
+        }
+        .char-card:hover { border-color: var(--gold-bright); transform: scale(1.05); box-shadow: 0 0 20px var(--gold-bright); }
+
+        .char-img-frame {
+            width: 100%; aspect-ratio: 1/1; border-radius: 12px; border: 2px solid var(--gold-main);
+            margin-bottom: 10px; overflow: hidden; background: #162a4a;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .char-img-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 2. 模式切換按鈕 - 極其醒目版 */
+        .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 25px; }
+        .mode-btn {
+            padding: 22px 10px; border-radius: 18px; border: 3px solid rgba(212, 175, 55, 0.3);
+            background: rgba(17, 34, 64, 0.6); color: var(--text-dim); cursor: pointer;
+            font-weight: bold; font-size: 1.4rem; display: flex; flex-direction: column;
+            align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mode-btn span:first-child { font-size: 2.2rem; }
+        .mode-btn.active#btn-study { border-color: var(--gold-main); color: var(--gold-bright); background: #2c1f0a; box-shadow: 0 0 20px var(--gold-main); transform: scale(1.05); }
+        .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a2342; box-shadow: 0 0 20px var(--accent-blue); transform: scale(1.05); }
+
+        /* 3. 控制面板：語速與主題 */
+        .control-panel {
+            width: 100%; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 20px;
+            margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+        }
+        .speed-row { display: flex; gap: 10px; align-items: center; font-weight: bold; color: var(--gold-main); }
+        .category-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+        .btn-mini {
+            background: transparent; border: 1px solid rgba(212, 175, 55, 0.4); color: var(--text-dim);
+            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: 0.3s;
+        }
+        .btn-mini.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 175, 55, 0.2); }
+
+        /* 4. 單字卡區域 */
+        .card-wrap { width: 100%; height: 350px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+        .card-side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 25px; border: 2px solid var(--gold-main); padding: 30px; background-color: var(--bg-surface); box-shadow: var(--shadow); }
+        .card-front .word { font-size: 3.5rem; color: var(--gold-bright); text-align: center; }
+        .card-front .trans { font-size: 1.8rem; color: var(--gold-main); margin-top: 15px; }
+        .card-back { transform: rotateY(180deg); background-color: #1a2a44; text-align: center; }
+
+        /* 5. 測驗區 */
+        .quiz-area { display: none; width: 100%; background: var(--bg-surface); padding: 25px; border-radius: 25px; border: 2px solid var(--gold-main); text-align: center; }
+        .quiz-q { font-size: 1.4rem; margin-bottom: 25px; min-height: 5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .opt-btn { background: #162a4a; border: 1px solid var(--gold-main); color: white; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+
+        /* 勇者面板 */
+        .hero-bar {
+            width: 100%; display: flex; align-items: center; background: linear-gradient(135deg, #0a192f, #162a4a);
+            padding: 15px; border-radius: 20px; border: 2px solid var(--gold-main); margin-bottom: 20px;
+        }
+        .hero-img-box { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gold-bright); overflow: hidden; margin-right: 15px; background: #000; }
+        .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .game-btn { background: linear-gradient(to bottom, var(--gold-bright), var(--gold-main)); color: var(--bg-deep); padding: 15px 40px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(212,175,55,0.4); transition: 0.3s; }
+        .game-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        @media (max-width: 480px) { .opt-grid { grid-template-columns: 1fr; } .mode-btn { font-size: 1.1rem; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- 0. 初始灰色引導 -->
+    <div id="welcome-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:var(--gold-bright); font-size:2.2rem; margin-bottom:15px;">勇者召喚</h2>
+            <p style="margin-bottom:30px; font-size:1.3rem;">你現在可以開始選擇你的學習角色。</p>
+            <button class="game-btn" onclick="closeOverlay('welcome-overlay', 'scr-select')">選擇導師</button>
+        </div>
+    </div>
+
+    <!-- 1. 角色選擇畫面 -->
+    <div id="scr-select" class="screen">
+        <h1 style="color:var(--gold-main); font-size:2.8rem; margin: 20px 0; text-align:center;">GEPT 單字大冒險</h1>
+        <p style="color:var(--gold-main); opacity:0.8; text-align:center; margin-bottom:10px;">請挑選你的專屬導師</p>
+        <div class="char-grid">
+            <div class="char-card" onclick="startAdventure('male')">
+                <div class="char-img-frame"><img src="char1.png" onerror="this.parentElement.innerHTML='👨‍🏫'"></div>
+                <div class="char-name" style="color:var(--gold-bright); font-weight:bold; font-size:1.2rem;">凱文 (Kevin)</div>
+            </div>
+            <div class="char-card" onclick="startAdventure('female')">
+                <div class="char-img-frame"><img src="char2.png" onerror="this.parentElement.innerHTML='👩‍🏫'"></div>
+                <div class="char-name" style="color:var(--gold-bright); font-weight:bold; font-size:1.2rem;">艾莉絲 (Alice)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1.5 模式選擇對話框 -->
+    <div id="modal-mode-overlay" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2 id="hero-welcome-msg" style="color:var(--gold-bright); margin-bottom:15px;">你好！</h2>
+            <p style="margin-bottom:25px; font-size:1.2rem;">準備好要開始今天的冒險了嗎？</p>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <button class="game-btn" onclick="finalizeMode('study')">🔍 探索學習 (翻卡模式)</button>
+                <button class="game-btn" style="background: linear-gradient(to bottom, #4A90E2, #357ABD); color: white;" onclick="finalizeMode('quiz')">⚔️ 首領挑戰 (測驗模式)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1.6 主題指引彈窗 -->
+    <div id="modal-theme-guide" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div style="font-size:3.5rem; margin-bottom:15px;">🗺️</div>
+            <h2 style="color:var(--gold-bright); margin-bottom:10px;">目標確認</h2>
+            <p style="font-size:1.1rem;">請點擊下方的「主題按鈕」來選擇你的冒險任務範圍！</p>
+            <button class="game-btn" style="margin-top:20px;" onclick="closeOverlay('modal-theme-guide', 'scr-game')">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 2. 遊戲主畫面 -->
+    <div id="scr-game" class="screen">
+        <div class="hero-bar">
+            <div class="hero-img-box"><img id="hero-img" src="" alt="Hero"></div>
+            <div style="flex:1">
+                <h2 id="hero-name" style="font-size:1.2rem; color:var(--gold-bright);">角色名稱</h2>
+                <div style="font-size:0.8rem; color:var(--gold-main);">等級：LV.1 單字勇者</div>
+            </div>
+            <button style="color:var(--text-dim); background:transparent; border:none; text-decoration:underline; cursor:pointer;" onclick="location.reload()">重新選擇</button>
+        </div>
+
+        <!-- 醒目模式切換 -->
+        <div class="mode-selector">
+            <button id="btn-study" class="mode-btn" onclick="setMode('study')"><span>🔍</span><span>探索學習</span></button>
+            <button id="btn-quiz" class="mode-btn" onclick="setMode('quiz')"><span>⚔️</span><span>首領挑戰</span></button>
+        </div>
+
+        <div class="control-panel">
+            <div class="speed-row">
+                <span>🗣️ 語速控制：</span>
+                <button class="btn-mini" id="rate-0.6" onclick="setSpeed(0.6)">慢速</button>
+                <button class="btn-mini active" id="rate-1.0" onclick="setSpeed(1.0)">普通</button>
+                <button class="btn-mini" id="rate-1.4" onclick="setSpeed(1.4)">快速</button>
+            </div>
+            <div class="category-row" id="cat-box"></div>
+        </div>
+
+        <!-- 單字卡 -->
+        <div id="card-widget" class="card-wrap" onclick="handleFlip()">
+            <div class="card-inner">
+                <div class="card-side card-front">
+                    <div class="word" id="word-en">Select Topic</div>
+                    <div class="trans" id="word-zh">請點選主題</div>
+                    <div style="margin-top:20px; font-size:0.8rem; color:var(--accent-blue);">點擊聽發音並翻轉</div>
+                </div>
+                <div class="card-side card-back">
+                    <div id="sent-en" style="color:white; font-size:1.5rem; line-height:1.5; margin-bottom:15px; text-align:center;">...</div>
+                    <div id="sent-zh" style="color:var(--gold-bright); font-size:1.1rem;">...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 測驗 -->
+        <div id="quiz-widget" class="quiz-area">
+            <div id="quiz-msg" style="height:24px; font-weight:bold;"></div>
+            <div id="quiz-q-text" class="quiz-q">...</div>
+            <div class="opt-grid" id="opt-grid"></div>
+        </div>
+
+        <div class="category-row" style="margin-top:15px;">
+            <button class="btn-mini" onclick="changeIdx(-1)">❮ 上一個</button>
+            <button class="game-btn" style="padding:10px 30px;" onclick="replayAudio(event)">🔊 聽發音</button>
+            <button class="btn-mini" onclick="changeIdx(1)">❯ 下一個</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 多樣化單字庫
+        const dataSet = {
+            "心情感受": [
+                { en: "Patient", zh: "有耐心的", sent: "A good teacher is always {word} with students.", trans: "好的老師對學生總是有耐心的。" },
+                { en: "Nervous", zh: "緊張的", sent: "I always feel {word} before exams.", trans: "我在考試前總是感到緊張。" }
+            ],
+            "餐廳點餐": [
+                { en: "Menu", zh: "菜單", sent: "Could we see the {word}, please?", trans: "可以請給我們看菜單嗎？" },
+                { en: "Order", zh: "點餐", sent: "Are you ready to {word} now?", trans: "您現在準備好要點餐了嗎？" },
+                { en: "Delicious", zh: "美味的", sent: "This pasta looks absolutely {word}.", trans: "這份義大利麵看起來真的很美味。" }
+            ],
+            "交通對談": [
+                { en: "Station", zh: "車站", sent: "The nearest train {word} is ten minutes away.", trans: "最近的火車站在十分鐘路程外。" },
+                { en: "Ticket", zh: "票", sent: "Please show your {word} to the conductor.", trans: "請向列車長出示你的票。" },
+                { en: "Transfer", zh: "轉乘", sent: "You need to {word} at the next stop.", trans: "你需要在下一站轉乘。" }
+            ]
+        };
+
+        let state = { hero: null, mode: 'study', cat: '心情感受', idx: 0, speed: 1.0 };
+
+        // 畫面與初始化邏輯
+        function closeOverlay(overlayId, nextScreenId) {
+            document.getElementById(overlayId).style.display = 'none';
+            if (nextScreenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(nextScreenId).classList.add('active');
+            }
+        }
+
+        function startAdventure(type) {
+            state.hero = type === 'male' ? { name: "勇者 凱文", img: "char1.png" } : { name: "勇者 艾莉絲", img: "char2.png" };
+            document.getElementById('hero-welcome-msg').innerText = `你好，${state.hero.name}！`;
+            document.getElementById('scr-select').classList.remove('active');
+            document.getElementById('modal-mode-overlay').style.display = 'flex';
+        }
+
+        function finalizeMode(m) {
+            state.mode = m;
+            document.getElementById('modal-mode-overlay').style.display = 'none';
+            document.getElementById('hero-img').src = state.hero.img;
+            document.getElementById('hero-name').innerText = state.hero.name;
+            document.getElementById('scr-game').classList.add('active');
+            document.getElementById('modal-theme-guide').style.display = 'flex'; 
+            setMode(m); initUI();
+        }
+
+        function setSpeed(val) {
+            state.speed = val;
+            document.querySelectorAll('.speed-row .btn-mini').forEach(b => b.classList.remove('active'));
+            document.getElementById(`rate-${val.toFixed(1)}`).classList.add('active');
+            speak(dataSet[state.cat][state.idx].en);
+        }
+
+        function initUI() {
+            const box = document.getElementById('cat-box'); box.innerHTML = '';
+            Object.keys(dataSet).forEach(c => {
+                const b = document.createElement('button');
+                b.className = `btn-mini ${c === state.cat ? 'active' : ''}`; b.innerText = c;
+                b.onclick = () => { state.cat = c; state.idx = 0; initUI(); refresh(); };
+                box.appendChild(b);
+            });
+            refresh();
+        }
+
+        function refresh() {
+            const list = dataSet[state.cat];
+            const item = list[state.idx];
+            document.getElementById('word-en').innerText = item.en;
+            document.getElementById('word-zh').innerText = item.zh;
+            document.getElementById('sent-en').innerText = item.sent.replace('{word}', item.en);
+            document.getElementById('sent-zh').innerText = item.trans;
+            if(state.mode === 'quiz') genQuiz(item.en);
+            document.getElementById('card-widget').classList.remove('flipped');
+        }
+
+        function handleFlip() {
+            if(state.mode === 'quiz') return;
+            const card = document.getElementById('card-widget');
+            const toBack = !card.classList.contains('flipped');
+            const item = dataSet[state.cat][state.idx];
+            speak(toBack ? item.sent.replace('{word}', item.en) : item.en);
+            card.classList.toggle('flipped');
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US'; u.rate = state.speed; window.speechSynthesis.speak(u);
+            }
+        }
+
+        function replayAudio(e) { e.stopPropagation(); speak(dataSet[state.cat][state.idx].en); }
+
+        function genQuiz(correct) {
+            const grid = document.getElementById('opt-grid'); grid.innerHTML = '';
+            document.getElementById('quiz-q-text').innerText = dataSet[state.cat][state.idx].sent.replace('{word}', '______');
+            let pool = []; Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en)));
+            let opts = [correct, ...pool.filter(w => w !== correct)].sort(() => Math.random() - 0.5).slice(0, 4);
+            opts.forEach(o => {
+                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
+                b.onclick = () => {
+                    if(o === correct) {
+                        b.style.background = 'var(--accent-success)'; startConfetti(); speak("Excellent!");
+                        setTimeout(() => changeIdx(1), 1500);
+                    } else { b.style.background = 'var(--accent-fail)'; speak("Try again!"); }
+                };
+                grid.appendChild(b);
+            });
+        }
+
+        function setMode(m) {
+            state.mode = m;
+            document.getElementById('btn-study').classList.toggle('active', m === 'study');
+            document.getElementById('btn-quiz').classList.toggle('active', m === 'quiz');
+            document.getElementById('card-widget').style.display = m === 'quiz' ? 'none' : 'block';
+            document.getElementById('quiz-widget').style.display = m === 'quiz' ? 'block' : 'none';
+            refresh();
+        }
+
+        function changeIdx(dir) {
+            let list = dataSet[state.cat];
+            state.idx = (state.idx + dir + list.length) % list.length;
+            refresh();
+        }
+
+        // 彩帶特效
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        class P {
+            constructor() {
+                this.x = canvas.width/2; this.y = canvas.height/2;
+                this.s = Math.random()*5+3; this.c = `hsl(${Math.random()*360},100%,50%)`;
+                this.a = Math.random()*Math.PI*2; this.sp = Math.random()*10+5; this.o = 1;
+            }
+            u() { this.x += Math.cos(this.a)*this.sp; this.y += Math.sin(this.a)*this.sp+1; this.o -= 0.02; }
+            d() { ctx.globalAlpha = this.o; ctx.fillStyle = this.c; ctx.fillRect(this.x, this.y, this.s, this.s); }
+        }
+        function startConfetti() {
+            pts = Array.from({length: 40}, () => new P());
+            function anim() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                pts.forEach((p,i) => { p.u(); p.d(); if(p.o <= 0) pts.splice(i,1); });
+                if(pts.length > 0) requestAnimationFrame(anim);
+            }
+            anim();
+        }
+    </script>
+</body>
+</html>
