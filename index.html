@@ -6,7 +6,7 @@
     <title>GEPT 單字冒險 - 勇者傳說版</title>
     <style>
         /* =========================================
-           CSS 樣式：黑金遊戲質感與醒目 UI
+           CSS 樣式：極致黑金遊戲設計
            ========================================= */
         :root {
             --bg-deep: #050a14;
@@ -41,13 +41,12 @@
             pointer-events: none; z-index: 9999;
         }
 
-        /* 螢幕切換控制 */
         .screen { display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; }
         .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 遮罩引導系統 */
+        /* 彈出式對話框 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay-bg); z-index: 5000;
@@ -68,7 +67,7 @@
             border-radius: 20px; padding: 15px; cursor: pointer; transition: 0.3s;
             text-align: center; box-shadow: var(--shadow);
         }
-        .char-card:hover { border-color: var(--gold-bright); transform: scale(1.05); box-shadow: 0 0 20px var(--gold-bright); }
+        .char-card:hover { border-color: var(--gold-bright); transform: scale(1.05); }
 
         .char-img-frame {
             width: 100%; aspect-ratio: 1/1; border-radius: 12px; border: 2px solid var(--gold-main);
@@ -77,31 +76,31 @@
         }
         .char-img-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 2. 模式切換按鈕 - 極其醒目版 */
+        /* 2. 重要：極醒目模式切換 */
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 25px; }
         .mode-btn {
-            padding: 22px 10px; border-radius: 18px; border: 3px solid rgba(212, 175, 55, 0.3);
+            padding: 25px 10px; border-radius: 20px; border: 3px solid rgba(212, 175, 55, 0.3);
             background: rgba(17, 34, 64, 0.6); color: var(--text-dim); cursor: pointer;
-            font-weight: bold; font-size: 1.4rem; display: flex; flex-direction: column;
+            font-weight: bold; font-size: 1.5rem; display: flex; flex-direction: column;
             align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mode-btn span:first-child { font-size: 2.2rem; }
-        .mode-btn.active#btn-study { border-color: var(--gold-main); color: var(--gold-bright); background: #2c1f0a; box-shadow: 0 0 20px var(--gold-main); transform: scale(1.05); }
-        .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a2342; box-shadow: 0 0 20px var(--accent-blue); transform: scale(1.05); }
+        .mode-btn span:first-child { font-size: 2.5rem; }
+        .mode-btn.active#btn-study { border-color: var(--gold-main); color: var(--gold-bright); background: #2c1f0a; box-shadow: 0 0 25px var(--gold-main); }
+        .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a2342; box-shadow: 0 0 25px var(--accent-blue); }
 
         /* 3. 控制面板：語速與主題 */
         .control-panel {
             width: 100%; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 20px;
-            margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px;
+            margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px;
         }
         .speed-row { display: flex; gap: 10px; align-items: center; font-weight: bold; color: var(--gold-main); }
         .category-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
         .btn-mini {
             background: transparent; border: 1px solid rgba(212, 175, 55, 0.4); color: var(--text-dim);
-            padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: 0.3s;
+            padding: 10px 18px; border-radius: 12px; cursor: pointer; font-size: 1rem; transition: 0.3s;
         }
-        .btn-mini.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 175, 55, 0.2); }
+        .btn-mini.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 175, 55, 0.2); font-weight: bold; }
 
         /* 4. 單字卡區域 */
         .card-wrap { width: 100%; height: 350px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
@@ -112,11 +111,11 @@
         .card-front .trans { font-size: 1.8rem; color: var(--gold-main); margin-top: 15px; }
         .card-back { transform: rotateY(180deg); background-color: #1a2a44; text-align: center; }
 
-        /* 5. 測驗區 */
+        /* 5. 測驗區 (Boss Challenge) */
         .quiz-area { display: none; width: 100%; background: var(--bg-surface); padding: 25px; border-radius: 25px; border: 2px solid var(--gold-main); text-align: center; }
-        .quiz-q { font-size: 1.4rem; margin-bottom: 25px; min-height: 5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; }
+        .quiz-q { font-size: 1.5rem; margin-bottom: 25px; min-height: 5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; }
         .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .opt-btn { background: #162a4a; border: 1px solid var(--gold-main); color: white; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .opt-btn { background: #162a4a; border: 1px solid var(--gold-main); color: white; padding: 18px; border-radius: 15px; cursor: pointer; font-size: 1.3rem; transition: 0.2s; font-weight: bold; }
 
         /* 勇者面板 */
         .hero-bar {
@@ -126,10 +125,9 @@
         .hero-img-box { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gold-bright); overflow: hidden; margin-right: 15px; background: #000; }
         .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        .game-btn { background: linear-gradient(to bottom, var(--gold-bright), var(--gold-main)); color: var(--bg-deep); padding: 15px 40px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(212,175,55,0.4); transition: 0.3s; }
-        .game-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .game-btn { background: linear-gradient(to bottom, var(--gold-bright), var(--gold-main)); color: var(--bg-deep); padding: 15px 40px; border-radius: 40px; border: none; font-weight: bold; cursor: pointer; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
 
-        @media (max-width: 480px) { .opt-grid { grid-template-columns: 1fr; } .mode-btn { font-size: 1.1rem; } }
+        @media (max-width: 480px) { .opt-grid { grid-template-columns: 1fr; } .mode-btn { font-size: 1.2rem; } }
     </style>
 </head>
 <body>
@@ -148,7 +146,6 @@
     <!-- 1. 角色選擇畫面 -->
     <div id="scr-select" class="screen">
         <h1 style="color:var(--gold-main); font-size:2.8rem; margin: 20px 0; text-align:center;">GEPT 單字大冒險</h1>
-        <p style="color:var(--gold-main); opacity:0.8; text-align:center; margin-bottom:10px;">請挑選你的專屬導師</p>
         <div class="char-grid">
             <div class="char-card" onclick="startAdventure('male')">
                 <div class="char-img-frame"><img src="char1.png" onerror="this.parentElement.innerHTML='👨‍🏫'"></div>
@@ -178,7 +175,7 @@
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:15px;">🗺️</div>
             <h2 style="color:var(--gold-bright); margin-bottom:10px;">目標確認</h2>
-            <p style="font-size:1.1rem;">請點擊下方的「主題按鈕」來選擇你的冒險任務範圍！</p>
+            <p style="font-size:1.1rem;">請點擊下方的「主題按鈕」來選擇你的冒險範圍！</p>
             <button class="game-btn" style="margin-top:20px;" onclick="closeOverlay('modal-theme-guide', 'scr-game')">我知道了</button>
         </div>
     </div>
@@ -225,9 +222,9 @@
             </div>
         </div>
 
-        <!-- 測驗 -->
+        <!-- 測驗 (修復點) -->
         <div id="quiz-widget" class="quiz-area">
-            <div id="quiz-msg" style="height:24px; font-weight:bold;"></div>
+            <div id="quiz-msg" style="height:24px; font-weight:bold; margin-bottom:10px;"></div>
             <div id="quiz-q-text" class="quiz-q">...</div>
             <div class="opt-grid" id="opt-grid"></div>
         </div>
@@ -240,7 +237,6 @@
     </div>
 
     <script>
-        // 1. 多樣化單字庫
         const dataSet = {
             "心情感受": [
                 { en: "Patient", zh: "有耐心的", sent: "A good teacher is always {word} with students.", trans: "好的老師對學生總是有耐心的。" },
@@ -248,19 +244,16 @@
             ],
             "餐廳點餐": [
                 { en: "Menu", zh: "菜單", sent: "Could we see the {word}, please?", trans: "可以請給我們看菜單嗎？" },
-                { en: "Order", zh: "點餐", sent: "Are you ready to {word} now?", trans: "您現在準備好要點餐了嗎？" },
                 { en: "Delicious", zh: "美味的", sent: "This pasta looks absolutely {word}.", trans: "這份義大利麵看起來真的很美味。" }
             ],
             "交通對談": [
                 { en: "Station", zh: "車站", sent: "The nearest train {word} is ten minutes away.", trans: "最近的火車站在十分鐘路程外。" },
-                { en: "Ticket", zh: "票", sent: "Please show your {word} to the conductor.", trans: "請向列車長出示你的票。" },
-                { en: "Transfer", zh: "轉乘", sent: "You need to {word} at the next stop.", trans: "你需要在下一站轉乘。" }
+                { en: "Ticket", zh: "票", sent: "Please show your {word} to the conductor.", trans: "請向列車長出示你的票。" }
             ]
         };
 
         let state = { hero: null, mode: 'study', cat: '心情感受', idx: 0, speed: 1.0 };
 
-        // 畫面與初始化邏輯
         function closeOverlay(overlayId, nextScreenId) {
             document.getElementById(overlayId).style.display = 'none';
             if (nextScreenId) {
@@ -311,17 +304,17 @@
             document.getElementById('word-zh').innerText = item.zh;
             document.getElementById('sent-en').innerText = item.sent.replace('{word}', item.en);
             document.getElementById('sent-zh').innerText = item.trans;
+
             if(state.mode === 'quiz') genQuiz(item.en);
             document.getElementById('card-widget').classList.remove('flipped');
         }
 
         function handleFlip() {
             if(state.mode === 'quiz') return;
-            const card = document.getElementById('card-widget');
-            const toBack = !card.classList.contains('flipped');
+            const toBack = !document.getElementById('card-widget').classList.contains('flipped');
             const item = dataSet[state.cat][state.idx];
             speak(toBack ? item.sent.replace('{word}', item.en) : item.en);
-            card.classList.toggle('flipped');
+            document.getElementById('card-widget').classList.toggle('flipped');
         }
 
         function speak(text) {
@@ -334,18 +327,45 @@
 
         function replayAudio(e) { e.stopPropagation(); speak(dataSet[state.cat][state.idx].en); }
 
+        // --- 修復：測驗比對邏輯 ---
         function genQuiz(correct) {
             const grid = document.getElementById('opt-grid'); grid.innerHTML = '';
             document.getElementById('quiz-q-text').innerText = dataSet[state.cat][state.idx].sent.replace('{word}', '______');
-            let pool = []; Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en)));
-            let opts = [correct, ...pool.filter(w => w !== correct)].sort(() => Math.random() - 0.5).slice(0, 4);
+            
+            // 建立乾淨的正確答案
+            const cleanCorrect = correct.trim();
+            
+            // 收集所有可能的單字作為干擾項
+            let pool = []; 
+            Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en.trim())));
+            
+            // 生成隨機選項 (包含正確答案)
+            let opts = [cleanCorrect, ...pool.filter(w => w.toLowerCase() !== cleanCorrect.toLowerCase())]
+                       .filter((v, i, a) => a.indexOf(v) === i) // 去重
+                       .sort(() => Math.random() - 0.5)
+                       .slice(0, 4);
+
+            // 再次確認正確答案在選項內
+            if (!opts.includes(cleanCorrect)) opts[0] = cleanCorrect;
+            opts = opts.sort(() => Math.random() - 0.5);
+
             opts.forEach(o => {
-                const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = o;
+                const b = document.createElement('button');
+                b.className = 'opt-btn';
+                b.innerText = o;
                 b.onclick = () => {
-                    if(o === correct) {
-                        b.style.background = 'var(--accent-success)'; startConfetti(); speak("Excellent!");
-                        setTimeout(() => changeIdx(1), 1500);
-                    } else { b.style.background = 'var(--accent-fail)'; speak("Try again!"); }
+                    // 修復：不分大小寫比對
+                    if(o.toLowerCase().trim() === cleanCorrect.toLowerCase()) {
+                        b.style.background = 'var(--accent-success)';
+                        startConfetti();
+                        speak("Excellent!");
+                        document.getElementById('quiz-msg').innerHTML = `<span style="color:var(--accent-success)">Excellent!</span>`;
+                        setTimeout(() => { if(state.idx < dataSet[state.cat].length - 1) changeIdx(1); }, 1500);
+                    } else {
+                        b.style.background = 'var(--accent-fail)';
+                        document.getElementById('quiz-msg').innerHTML = `<span style="color:var(--accent-fail)">Not quite, try again!</span>`;
+                        speak("Try again!");
+                    }
                 };
                 grid.appendChild(b);
             });
@@ -366,7 +386,6 @@
             refresh();
         }
 
-        // 彩帶特效
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
         let pts = [];
