@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEPT 單字冒險 - 勇者傳說 GitHub 修復版</title>
+    <title>GEPT 單字冒險 - 勇者傳說 GitHub 最終穩定版</title>
     <style>
         /* =========================================
            CSS 樣式：極致黑金 RPG 遊戲介面
@@ -49,7 +49,7 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 彈出對話框系統 */
+        /* 彈出對話框 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay-bg); z-index: 9000;
@@ -65,10 +65,9 @@
             border-radius: 40px;
             box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
             max-width: 480px; width: 90%;
-            position: relative;
         }
 
-        /* 1. 角色英雄卡片 */
+        /* 角色選擇 */
         .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-top: 30px; }
         .char-card {
             background: linear-gradient(145deg, #112240, #0a192f);
@@ -108,7 +107,7 @@
         }
         @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
 
-        /* 2. 模式按鈕 */
+        /* 模式與控制按鈕 */
         .mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-bottom: 25px; }
         .mode-btn {
             padding: 20px 10px; border-radius: 20px; border: 3px solid rgba(212, 175, 55, 0.2);
@@ -120,16 +119,6 @@
         .mode-btn.active#btn-study { border-color: var(--gold-main); color: var(--gold-bright); background: #2c1f0a; box-shadow: 0 0 20px var(--gold-main); }
         .mode-btn.active#btn-quiz { border-color: var(--accent-blue); color: #74b9ff; background: #0a1f3d; box-shadow: 0 0 20px var(--accent-blue); }
 
-        /* 3. 勇者面板 */
-        .hero-bar {
-            width: 100%; display: flex; align-items: center; background: rgba(10, 25, 47, 0.9);
-            padding: 15px; border-radius: 25px; border: 2px solid var(--gold-main); margin-bottom: 20px;
-            backdrop-filter: blur(5px);
-        }
-        .hero-img-box { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gold-bright); overflow: hidden; margin-right: 15px; background: #000; }
-        .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* 4. 控制區 */
         .control-panel {
             width: 100%; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 25px;
             margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px;
@@ -144,7 +133,7 @@
         }
         .small-btn.active { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(212, 175, 55, 0.2); font-weight: bold; }
 
-        /* 5. 單字卡與測驗區 */
+        /* 單字卡元件 */
         .card-wrap { width: 100%; height: 350px; perspective: 1200px; cursor: pointer; margin-bottom: 25px; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
@@ -158,21 +147,31 @@
         .card-front .trans { font-size: 1.8rem; color: var(--gold-main); margin-top: 15px; }
         .card-back { transform: rotateY(180deg); background: linear-gradient(145deg, #1a2a44, #0a192f); text-align: center; }
 
+        /* 測驗區 */
         .quiz-area { display: none; width: 100%; background: var(--bg-surface); padding: 30px 20px; border-radius: 30px; border: 2px solid var(--gold-main); text-align: center; margin-bottom: 25px; box-shadow: var(--shadow); }
-        .quiz-q { font-size: 1.4rem; margin-bottom: 25px; min-height: 5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; }
+        .quiz-q { font-size: 1.4rem; margin-bottom: 25px; min-height: 5.5rem; display: flex; align-items: center; justify-content: center; line-height: 1.5; color: white; padding: 0 10px; }
         .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .opt-btn { background: #162a4a; border: 1px solid var(--gold-main); color: white; padding: 18px; border-radius: 15px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; font-weight: bold; }
+        .opt-btn:disabled { opacity: 0.8; cursor: default; }
+
+        /* 勇者面板 */
+        .hero-bar {
+            width: 100%; display: flex; align-items: center; background: rgba(10, 25, 47, 0.9);
+            padding: 15px; border-radius: 25px; border: 2px solid var(--gold-main); margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .hero-img-box { width: 65px; height: 65px; border-radius: 12px; border: 2px solid var(--gold-bright); overflow: hidden; margin-right: 15px; background: #000; }
+        .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
         .game-btn { 
             background: linear-gradient(to bottom, var(--gold-bright), var(--gold-main)); 
             color: var(--bg-deep); padding: 15px 40px; border-radius: 40px; border: none; 
             font-weight: bold; cursor: pointer; font-size: 1.2rem; 
             box-shadow: 0 8px 20px rgba(212,175,55,0.4); transition: 0.3s;
-            display: flex; align-items: center;
+            display: flex; align-items: center; justify-content: center;
         }
-        .game-btn:hover { transform: scale(1.05); }
 
-        @media (max-width: 480px) { .opt-grid { grid-template-columns: 1fr; } .mode-btn { font-size: 1.1rem; } .char-grid { gap: 10px; } }
+        @media (max-width: 480px) { .opt-grid { grid-template-columns: 1fr; } .mode-btn { font-size: 1.1rem; } }
     </style>
 </head>
 <body>
@@ -186,7 +185,7 @@
                 <h2 style="color:var(--gold-bright); font-size:2rem; margin-bottom:15px;">勇者召喚</h2>
                 <div style="font-size: 4rem; margin-bottom: 20px;">🛡️</div>
                 <p style="margin-bottom:30px; font-size:1.2rem; line-height:1.6;">
-                    請選擇一位導師作為夥伴，<br>展開冒險之旅！
+                    請選擇一位卡通導師作為夥伴，<br>展開冒險之旅！
                 </p>
                 <button class="game-btn" style="margin: 0 auto;" onclick="closeOverlay('welcome-overlay', 'scr-select')">踏入傳送門</button>
             </div>
@@ -225,8 +224,8 @@
             <h2 id="hero-welcome-msg" style="color:var(--gold-bright); margin-bottom:15px;">你好！</h2>
             <p style="margin-bottom:25px; font-size:1.2rem;">冒險即將啟程，你想如何開始？</p>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <button class="game-btn" style="justify-content:center;" onclick="finalizeMode('study')">🔍 探索學習 (翻卡)</button>
-                <button class="game-btn" style="justify-content:center; background: linear-gradient(to bottom, #4A90E2, #357ABD); color: white;" onclick="finalizeMode('quiz')">⚔️ 首領挑戰 (測驗)</button>
+                <button class="game-btn" onclick="finalizeMode('study')">🔍 探索學習 (翻卡)</button>
+                <button class="game-btn" style="background: linear-gradient(to bottom, #4A90E2, #357ABD); color: white;" onclick="finalizeMode('quiz')">⚔️ 首領挑戰 (測驗)</button>
             </div>
         </div>
     </div>
@@ -249,7 +248,7 @@
                 <h2 id="hero-name" style="font-size:1.2rem; color:var(--gold-bright);">角色名稱</h2>
                 <div style="font-size:0.75rem; color:var(--gold-main); margin-bottom:5px;">等級：LV.1 單字勇者</div>
                 <div style="width:100%; height:8px; background:rgba(0,0,0,0.5); border-radius:4px; border: 1px solid var(--gold-main); overflow:hidden;">
-                    <div style="width:35%; height:100%; background: linear-gradient(90deg, var(--gold-main), var(--gold-bright));"></div>
+                    <div id="exp-bar" style="width:10%; height:100%; background: linear-gradient(90deg, var(--gold-main), var(--gold-bright)); transition: width 0.3s;"></div>
                 </div>
             </div>
             <button style="color:var(--text-dim); background:transparent; border:none; text-decoration:underline; cursor:pointer; font-size:0.8rem; margin-left:10px;" onclick="location.reload()">登出</button>
@@ -308,13 +307,15 @@
                 { en: "Patient", zh: "有耐心的", sent: "A good teacher is always {word}.", trans: "好老師總是非常有耐心。" },
                 { en: "Nervous", zh: "緊張的", sent: "I always feel {word} before exams.", trans: "考試前我總是感到緊張。" }
             ],
-            "美食地圖": [
+            "餐廳點餐": [
                 { en: "Delicious", zh: "美味的", sent: "This cake smells {word}!", trans: "這蛋糕聞起來真美味！" },
-                { en: "Menu", zh: "菜單", sent: "May I see the {word}, please?", trans: "可以請給我看菜單嗎？" }
+                { en: "Menu", zh: "菜單", sent: "May I see the {word}, please?", trans: "可以請給我看菜單嗎？" },
+                { en: "Order", zh: "點餐", sent: "Are you ready to {word}?", trans: "您準備好要點餐了嗎？" }
             ],
             "交通對談": [
                 { en: "Transfer", zh: "轉乘", sent: "You need to {word} at the next stop.", trans: "你需要在下一站轉乘。" },
-                { en: "Ticket", zh: "票", sent: "Show your {word} to the conductor.", trans: "向列車長出示你的票。" }
+                { en: "Ticket", zh: "票", sent: "Show your {word} to the conductor.", trans: "向列車長出示你的票。" },
+                { en: "Station", zh: "車站", sent: "Where is the nearest train {word}?", trans: "最近的火車站在哪裡？" }
             ]
         };
 
@@ -323,17 +324,9 @@
             female: { name: "艾莉絲 (Alice)", text: "嗨！我是艾莉絲。讓我們展開有趣的冒險並學習新單字吧！", voice: "Hi! I am Alice. Let's have a fun adventure and learn new words!" }
         };
 
-        let state = { hero: null, mode: 'study', cat: '日常社交', idx: 0, speed: 1.0, selectedType: null };
+        let state = { hero: null, mode: 'study', cat: '日常社交', idx: 0, speed: 1.0, selectedType: null, correctWord: "" };
 
         // --- 核心優化：語音系統 ---
-        let voicesLoaded = false;
-        function loadVoices() {
-            window.speechSynthesis.getVoices();
-            voicesLoaded = true;
-        }
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
-
         function speak(text) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -356,7 +349,8 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- 畫面控制 ---
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
         function closeOverlay(overlayId, nextScreenId) {
             const overlay = document.getElementById(overlayId);
             overlay.style.opacity = '0';
@@ -374,16 +368,12 @@
             state.selectedType = type;
             document.getElementById('char-male').classList.toggle('selected', type === 'male');
             document.getElementById('char-female').classList.toggle('selected', type === 'female');
-            
             const introBox = document.getElementById('char-intro-box');
             introBox.style.display = 'block';
             document.getElementById('intro-name').innerText = charIntros[type].name;
             document.getElementById('intro-text').innerText = charIntros[type].text;
-            
             document.getElementById('confirm-char-btn').style.display = 'flex';
-            
-            // 語音不擋住邏輯
-            try { speak(charIntros[type].voice); } catch(e) {}
+            speak(charIntros[type].voice);
         }
 
         function proceedToModeSelection() {
@@ -432,7 +422,10 @@
             document.getElementById('word-zh').innerText = item.zh;
             document.getElementById('sent-en').innerText = item.sent.replace('{word}', item.en);
             document.getElementById('sent-zh').innerText = item.trans;
-            if(state.mode === 'quiz') genQuiz(item.en);
+            
+            if(state.mode === 'quiz') {
+                genQuiz();
+            }
             document.getElementById('card-widget').classList.remove('flipped');
         }
 
@@ -446,32 +439,83 @@
 
         function replayAudio(e) { e.stopPropagation(); speak(dataSet[state.cat][state.idx].en); }
 
-        function genQuiz(correct) {
-            const grid = document.getElementById('opt-grid'); grid.innerHTML = '';
-            document.getElementById('quiz-q-text').innerText = dataSet[state.cat][state.idx].sent.replace('{word}', '______');
-            const cleanCorrect = correct.trim();
-            let pool = []; Object.values(dataSet).forEach(arr => pool.push(...arr.map(o => o.en.trim())));
-            let opts = [cleanCorrect, ...pool.filter(w => w.toLowerCase() !== cleanCorrect.toLowerCase())]
-                       .filter((v, i, a) => a.indexOf(v) === i)
-                       .sort(() => Math.random() - 0.5).slice(0, 4);
-            opts = opts.sort(() => Math.random() - 0.5);
-            opts.forEach(o => {
+        // --- 最終修正：測驗邏輯徹底強化 ---
+        function genQuiz() {
+            const grid = document.getElementById('opt-grid');
+            const msg = document.getElementById('quiz-msg');
+            const questionText = document.getElementById('quiz-q-text');
+            
+            // 1. 清空狀態
+            grid.innerHTML = '';
+            msg.innerText = '';
+            
+            // 2. 鎖定當前題目
+            const currentItem = dataSet[state.cat][state.idx];
+            const rawCorrect = currentItem.en.trim(); 
+            state.correctWord = rawCorrect; // 固定正確答案
+            
+            questionText.innerText = currentItem.sent.replace('{word}', '______');
+            
+            // 3. 跨分類收集選項池，並去重
+            let allWordsPool = [];
+            Object.values(dataSet).forEach(catArray => {
+                catArray.forEach(w => allWordsPool.push(w.en.trim()));
+            });
+            let uniquePool = [...new Set(allWordsPool)];
+            
+            // 4. 挑選干擾項（排除正確答案）
+            let distractors = uniquePool
+                .filter(w => w.toLowerCase() !== rawCorrect.toLowerCase())
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3);
+            
+            // 5. 合併答案與打亂（確保正確答案一定在裡面）
+            let finalOptions = [rawCorrect, ...distractors];
+            // Fisher-Yates Shuffle
+            for (let i = finalOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [finalOptions[i], finalOptions[j]] = [finalOptions[j], finalOptions[i]];
+            }
+            
+            // 6. 生成按鈕並綁定精準比對邏輯
+            finalOptions.forEach(opt => {
                 const b = document.createElement('button');
-                b.className = 'opt-btn'; b.innerText = o;
-                b.onclick = () => {
-                    if(o.toLowerCase().trim() === cleanCorrect.toLowerCase()) {
+                b.className = 'opt-btn';
+                b.innerText = opt;
+                b.onclick = function() {
+                    const picked = opt.toLowerCase().trim();
+                    const actualCorrect = state.correctWord.toLowerCase().trim();
+                    
+                    if(picked === actualCorrect) {
+                        // 答對邏輯
                         b.style.background = 'var(--accent-success)';
-                        startConfetti(); speak("Excellent!");
-                        document.getElementById('quiz-msg').innerHTML = `<span style="color:var(--accent-success)">Excellent!</span>`;
-                        setTimeout(() => { if(state.idx < dataSet[state.cat].length - 1) changeIdx(1); }, 1500);
+                        b.style.borderColor = 'var(--accent-success)';
+                        document.querySelectorAll('.opt-btn').forEach(btn => btn.disabled = true);
+                        startConfetti();
+                        speak("Correct! " + rawCorrect);
+                        msg.innerHTML = `<span style="color:var(--accent-success)">Excellent! ✨</span>`;
+                        updateExp(10);
+                        setTimeout(() => {
+                            if(state.idx < dataSet[state.cat].length - 1) changeIdx(1);
+                        }, 1500);
                     } else {
+                        // 答錯邏輯
                         b.style.background = 'var(--accent-fail)';
-                        document.getElementById('quiz-msg').innerHTML = `<span style="color:var(--accent-fail)">Try again!</span>`;
-                        speak("Try again!");
+                        b.style.borderColor = 'var(--accent-fail)';
+                        b.disabled = true; 
+                        msg.innerHTML = `<span style="color:var(--accent-fail)">Try again! 🛡️</span>`;
+                        speak("Not quite.");
                     }
                 };
                 grid.appendChild(b);
             });
+        }
+
+        function updateExp(amount) {
+            const bar = document.getElementById('exp-bar');
+            let currentWidth = parseFloat(bar.style.width) || 10;
+            currentWidth = Math.min(100, currentWidth + amount);
+            bar.style.width = currentWidth + '%';
         }
 
         function setMode(m) {
